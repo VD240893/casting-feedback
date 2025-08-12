@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Casting Feedback</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="container">
+  <h2>Casting Feedback</h2>
+
+  <input type="text" id="dataMatrix" placeholder="Enter Data Matrix">
+  <input type="text" id="docNumber" placeholder="Enter Doc. Number">
+  <input type="text" id="itemName" placeholder="Enter Item Name">
+  <input type="text" id="nextProcess" placeholder="Enter Next Process">
+
+  <div class="toggle-buttons">
+    <button id="OK" class="active" onclick="setStatus('OK')">OK</button>
+    <button id="OnHold" onclick="setStatus('OnHold')">On Hold ✓</button>
+  </div>
+
+  <button class="save" onclick="saveData()">Save</button>
+  <button class="cancel" onclick="cancelForm()">Cancel</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://fsqegklxntqydvepvyuf.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcWVna2x4bnRxeWR2ZXB2eXVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5ODIxMDQsImV4cCI6MjA3MDU1ODEwNH0.PyJG8iv7KJ0ID4bQBbjSJd0H3SRLudLsGpX3rPj0Nqc";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let statusValue = "OK";
+
+function setStatus(value) {
+  statusValue = value;
+  document.querySelectorAll(".toggle-buttons button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+  document.getElementById(value).classList.add("active");
+}
+
+async function saveData() {
+  const dataMatrix = document.getElementById("dataMatrix").value;
+  const docNumber = document.getElementById("docNumber").value;
+  const itemName = document.getElementById("itemName").value;
+  const nextProcess = document.getElementById("nextProcess").value;
+
+  if (!dataMatrix || !docNumber || !itemName || !nextProcess) {
+    alert("Please fill all fields.");
+    return;
+  }
+
+  let { error } = await supabaseClient
+    .from("casting_feedback")
+    .insert([{
+      data_matrix: dataMatrix,
+      doc_number: docNumber,
+      item_name: itemName,
+      next_process: nextProcess,
+      status: statusValue
+    }]);
+
+  if (error) {
+    console.error(error);
+    alert("Error saving data!");
+  } else {
+    alert("Data saved to Supabase!");
+    cancelForm();
+  }
+}
+
+function cancelForm() {
+  document.querySelectorAll("input[type=text]").forEach(input => input.value = "");
+  setStatus("OK");
+}
+</script>
+
+</body>
+</html>
